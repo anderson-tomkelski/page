@@ -11,10 +11,18 @@
 
 <script>
 function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showPosition);
+  if (navigator.permissions) {
+    navigator.permissions.query({name:'geolocation'}).then(function(permissionStatus) {
+      if (permissionStatus.state === 'granted') {
+        navigator.geolocation.getCurrentPosition(showPosition);
+      } else if (permissionStatus.state === 'prompt') {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        alert('Permissão para acessar a localização negada.');
+      }
+    });
   } else {
-    alert("Geolocalização não é suportada neste navegador.");
+    alert('Seu navegador não suporta a API de permissões.');
   }
 }
 
@@ -22,6 +30,23 @@ function showPosition(position) {
   var latitude = position.coords.latitude;
   var longitude = position.coords.longitude;
   document.getElementById("demo").innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+}
+
+function showError(error) {
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      alert("Usuário negou a solicitação de geolocalização.");
+      break;
+    case error.POSITION_UNAVAILABLE:
+      alert("Informações de localização indisponíveis.");
+      break;
+    case error.TIMEOUT:
+      alert("A solicitação para obter a localização do usuário expirou.");
+      break;
+    case error.UNKNOWN_ERROR:
+      alert("Ocorreu um erro desconhecido ao tentar obter a localização do usuário.");
+      break;
+  }
 }
 </script>
 </body>
